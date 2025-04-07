@@ -1,0 +1,9 @@
+fastapi
+langchain_core
+langchain_ollama
+langchain_community
+langchain
+redis
+# 向量数据库
+qdrant_client
+uvicorn
