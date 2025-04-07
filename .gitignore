@@ -93,3 +93,5 @@ dmypy.json
 *.swp
 *.swo
 *.swn
+
+asset/
