@@ -7,6 +7,9 @@ from langchain.schema.runnable import RunnablePassthrough
 from langchain_core.output_parsers import StrOutputParser
 from bocha_api import bocha_websearch_tool
 
+# 导入预设模板
+from prompts_template import iam_my_god
+
 app = FastAPI()
 
 
@@ -30,11 +33,9 @@ class Master:
         # 定义聊天提示模板，包括系统消息和用户输入
         self.prompt = ChatPromptTemplate.from_messages(
             [
-                ("system", "你是一个助手"),  # 系统消息，定义助手的角色
+                ("system", iam_my_god),
                 ("user", "{input}"),  # 用户输入占位符
-                MessagesPlaceholder(
-                    variable_name="agent_scratchpad"
-                ),  # 占位符，用于代理的临时数据
+                MessagesPlaceholder(variable_name="agent_scratchpad"),
             ]
         )
 
