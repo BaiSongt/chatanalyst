@@ -7,3 +7,10 @@ http https websocket
 
 # 服务器
 1. 接口访问， Python选型fastapi
+2. /chat    聊天post请求
+3. /add_ursl， 从url中学习知识
+4. /add_pdfs， 从pdf中学习知识
+5. /add_texts， 从txt中学习知识
+
+# 人性化
+1. 用户输入->AI判断情绪倾向->反馈
