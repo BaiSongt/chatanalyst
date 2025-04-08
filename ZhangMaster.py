@@ -8,7 +8,7 @@ from langchain_core.output_parsers import StrOutputParser
 from bocha_api import bocha_websearch_tool
 
 # 导入预设模板
-from prompts_template import iam_my_god
+from prompts_template import template_iam_my_god
 from prompts_template import emotion_prompt
 from prompts_template import emotion_feedback
 
@@ -27,22 +27,27 @@ class Master:
         # 定义内存键，用于存储聊天历史记录
         self.MEMORY_KEY = "chat_history"
 
-        # 系统   提示词（目前为空字符串）
-        self.SYSTEMPL = ""
+        # 系统设定
+        self.SYSTEMPL = template_iam_my_god
 
         # 情绪反馈 提示词
         self.MOODS = emotion_feedback
 
         # 默认情绪
-        self.EMOTION = "default"
+        self.USER_EMOTION = "default"
 
         # 定义聊天提示模板，包括系统消息和用户输入
         self.prompt = ChatPromptTemplate.from_messages(
             [
                 # 初始化系统提示词 情绪 emotion
-                ("system", self.SYSTEMPL.format(who_you_are=self.MOODS[self.EMOTION]["roleSet"])),
+                (
+                    "system",
+                    self.SYSTEMPL.format(
+                        who_you_are=self.MOODS[self.USER_EMOTION]["roleSet"]
+                    ),
+                ),
                 # {"system", "{chat_history}"}, # 聊天历史
-                ("user",   "{input}"),  # 用户输入占位符
+                ("user", "{input}"),  # 用户输入占位符
                 MessagesPlaceholder(variable_name="agent_scratchpad"),
             ]
         )
@@ -68,6 +73,7 @@ class Master:
         # 情绪分析
         emotion = self.emotion_chain(query=query)
         print(f"{self.emotion_chain.__name__} : {emotion}")
+        print("Role Set: ", self.MOODS[self.USER_EMOTION]["roleSet"])
         print(f"当前用户情绪分析: {emotion["text"]}")
 
         # 执行代理，传入用户查询，并返回结果
@@ -89,7 +95,8 @@ class Master:
             prompt=ChatPromptTemplate.from_template(emotion_prompt),
             llm=self.chatmodel,
             output_parser=StrOutputParser(),
-            verbose=True
+            verbose=True,
         )
-        result = chain.invoke({"query":query})
+        result = chain.invoke({"query": query})
+        self.USER_EMOTION = result["text"]
         return result
