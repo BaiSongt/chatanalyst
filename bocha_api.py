@@ -1,8 +1,5 @@
 import requests,os,sys
 from dotenv import load_dotenv
-from langchain.agents import initialize_agent, Tool, AgentType
-# from langchain_ollama.chat_models import ChatOllama
-from langchain.tools import tool
 
 # OPENAI_API_KEY = "YOUR-OPENAI-API-KEY"
 load_dotenv()
@@ -12,7 +9,7 @@ BOCHA_API_KEY = os.getenv("BOCHA_API_KEY")
 sys.path.append(os.path.abspath(os.path.join(os.getcwd(), "..")))
 
 # 定义Bocha Web Search工具
-@tool
+
 def bocha_websearch_tool(query: str, count: int = 5) -> str:
     """
     使用Bocha Web Search API 进行网页搜索。

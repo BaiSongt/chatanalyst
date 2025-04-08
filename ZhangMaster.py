@@ -51,9 +51,8 @@ class Master:
         # 初始化内存（目前为空字符串）
         self.memory = ""
 
-        # 定义工具列表，包括测试工具和自定义的网络搜索工具
-        # tool_list = [test, bocha_websearch_tool, get_info_from_local_db]
-        tool_list = [test, bocha_websearch_tool]
+        # 定义工具列表，包括测试工具和自定义的网络搜索工具, 本地搜索工具
+        tool_list = [test, web_tool, get_sci_info_from_local_db]
 
         # 创建一个基于 OpenAI 工具的代理
         agent = create_openai_tools_agent(
