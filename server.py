@@ -1,5 +1,7 @@
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
+
 from ZhangMaster import Master
+from my_tools import load_url, load_text, load_pdf
 
 app = FastAPI()
 
@@ -16,18 +18,21 @@ def chat(query: str):
 
 
 @app.post("/add_ursl")
-def add_ursl():
-    return {"response": "URLs added!"}
+def add_ursl(URL: str):
+    result = load_url(URL)
+    return result
 
 
 @app.post("/add_pdfs")
-def add_pdfs():
-    return {"response": "PDFs added!"}
+def add_pdfs(pdf_path: str):
+    result = load_pdf(pdf_path)
+    return result
 
 
 @app.post("/add_text")
-def add_text():
-    return {"response": "Texts added!"}
+def add_text(text_path: str):
+    result = load_text(text_path)
+    return result
 
 
 @app.websocket("/ws")

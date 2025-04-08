@@ -3,11 +3,15 @@ from langchain_community.vectorstores import Qdrant
 from qdrant_client import QdrantClient
 from bocha_api import bocha_websearch_tool
 
-import requests, json
+import requests, json, os
 
 from langchain_core.prompts import PromptTemplate
 from langchain_ollama.llms import OllamaLLM
 from langchain_ollama.embeddings import OllamaEmbeddings
+
+from langchain_community.document_loaders import WebBaseLoader
+from langchain.text_splitter import RecursiveCharacterTextSplitter
+from langchain_community.document_loaders import PyPDFLoader, TextLoader
 
 
 @tool
@@ -26,7 +30,7 @@ def web_tool(query: str, count: int):
 @tool
 def get_sci_info_from_local_db(query: str):
     """当问到和科学技术相关的内容时，优先使用本地数据进行检索回答
-       当没有查询到问题相关内容，或者信息较少时，可以使用其他工具
+    当没有查询到问题相关内容，或者信息较少时，可以使用其他工具
     """
     """
     使用指定的查询字符串查询本地数据库。
@@ -38,9 +42,11 @@ def get_sci_info_from_local_db(query: str):
         list: 从本地数据库中检索到的相关文档列表。
     """
 
+    print("> Tool call: get_sci_info_from_local_db")
+
     client = Qdrant(
-        QdrantClient(path="/local_qdrand"),
-        "local_documents",
+        QdrantClient(path=os.path.abspath(os.path.join(os.getcwd(), "local_qdrand"))),
+        "local_documents_db",
         OllamaEmbeddings(model="bge-m3:latest"),
     )
     # 此函数使用 Qdrant 客户端从本地数据库中检索相关文档。
@@ -59,11 +65,11 @@ def dream_analysis(query: str):
     prompt = PromptTemplate.from_template(
         "根据内容提取一个1个关键词， 只返回关键词， 内容为{topic}"
     )
-    prompt_value = prompt.invoke({"topic":query})
+    prompt_value = prompt.invoke({"topic": query})
 
     keyword = LLM.invoke(prompt_value)
     print("提取的关键词为：", keyword)
-    result = requests.post(url, data={"api_key":api_key, "title_zhougong":keyword})
+    result = requests.post(url, data={"api_key": api_key, "title_zhougong": keyword})
     if result.status_code == 200:
         json_result = json.loads(result.json())
         return json_result
@@ -71,3 +77,51 @@ def dream_analysis(query: str):
         raise ConnectionError("无法连接请求，请稍后再试")
 
 
+def doc_db_creator(
+    loader,
+    separators="\n",
+    chunk_size=400,
+    chunk_overlap=50,
+):
+    docs = loader.load()
+    url_documents = RecursiveCharacterTextSplitter(
+        separators=separators,
+        chunk_size=chunk_size,
+        chunk_overlap=chunk_overlap,
+    ).split_documents(docs)
+
+    # 引入向量数据库
+    qdrant = Qdrant.from_documents(
+        documents=url_documents,
+        embedding=OllamaEmbeddings(model="bge-m3:latest"),
+        path=os.path.abspath(os.path.join(os.getcwd(), "local_qdrand")),
+        collection_name="local_documents_db",
+    )
+
+
+def load_url(url: str):
+    loader = WebBaseLoader(url)
+    doc_db_creator(loader=loader, separators=[",", ".", "\n"])
+    print("> URL DB created successful!")
+    return {"response": "URLs added!"}
+
+
+def load_pdf(pdf_path: str):
+    loader = PyPDFLoader(pdf_path)
+    doc_db_creator(loader=loader, separators=[",", ".", "，", "。", "\n"])
+    print("> PDF DB created successful!")
+    return {"response": "PDFs added!"}
+
+
+def load_text(text_path: str):
+    loader = TextLoader(text_path)
+    doc_db_creator(loader=loader, separators=[",", ".", "，", "。", "\n"])
+    print("> Text DB created successful!")
+    return {"response": "Texts added!"}
+
+
+# def load_excel(self, pdf_path:str):
+    # loader = PyPDFLoader(pdf_path)
+    # doc_db_creator(loader=loader, separators=[',','.','，','。','\n'])
+    # print("> PDF DB created successful!")
+    # return {"response": "PDFs added!"}

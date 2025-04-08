@@ -96,3 +96,6 @@ dmypy.json
 
 asset/
 local_qdrand/
+
+# redis
+dump.rdb
