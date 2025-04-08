@@ -13,4 +13,5 @@ http https websocket
 5. /add_texts， 从txt中学习知识
 
 # 人性化
-1. 用户输入->AI判断情绪倾向->反馈
+1. 用户输入 -> AI判断情绪倾向 ->反馈 -> 获得用户情绪 -> agent判断
+2.
