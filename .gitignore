@@ -95,3 +95,4 @@ dmypy.json
 *.swn
 
 asset/
+local_qdrand/

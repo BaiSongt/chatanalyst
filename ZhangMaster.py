@@ -1,22 +1,18 @@
 from langchain_ollama.chat_models import ChatOllama
 from langchain.chains.llm import LLMChain
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
-from langchain.agents import initialize_agent, AgentType, AgentExecutor, tool
+from langchain.agents import initialize_agent, AgentType, AgentExecutor
 from langchain.agents import create_openai_tools_agent
 from langchain.schema.runnable import RunnablePassthrough
 from langchain_core.output_parsers import StrOutputParser
-from bocha_api import bocha_websearch_tool
+
+# tool
+from my_tools import *
 
 # 导入预设模板
 from prompts_template import template_iam_my_god
 from prompts_template import emotion_prompt
 from prompts_template import emotion_feedback
-
-
-@tool
-def test():
-    """test tool"""
-    return "test tools"
 
 
 class Master:
@@ -56,17 +52,18 @@ class Master:
         self.memory = ""
 
         # 定义工具列表，包括测试工具和自定义的网络搜索工具
-        test_tool = [test, bocha_websearch_tool]
+        # tool_list = [test, bocha_websearch_tool, get_info_from_local_db]
+        tool_list = [test, bocha_websearch_tool]
 
         # 创建一个基于 OpenAI 工具的代理
         agent = create_openai_tools_agent(
             llm=self.chatmodel,  # 使用的聊天模型
-            tools=test_tool,  # 工具列表
+            tools=tool_list,  # 工具列表
             prompt=self.prompt,  # 提示模板
         )
 
         # 初始化代理执行器，设置代理和工具，并启用详细日志
-        self.agent_executor = AgentExecutor(agent=agent, tools=test_tool, verbose=True)
+        self.agent_executor = AgentExecutor(agent=agent, tools=tool_list, verbose=True)
 
     def run(self, query):
         """Chat 执行端"""
